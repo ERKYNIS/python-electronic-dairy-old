@@ -1,0 +1,12 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+{% if redirect %}
+<meta http-equiv="refresh" content="3; url={{ redirect }}" />
+{% endif %}
+<div style="width:50%;text-align: center;margin: 0 auto;" id="logindiv">
+ <h3><strong>Пожалуйста подождите...</strong></h3>
+   <h5 style="margin-bottom:5%">Выполняем некоторые нужные операции.</h5>
+   <p>Сейчас вы будете перенаправлены...</p>
+</div>
+{% endblock %}
