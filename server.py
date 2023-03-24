@@ -11,7 +11,7 @@ def main():
 
 @app.route('/account')
 def index():
-    return render_template('account.html', title="Аккаунт")
+    return render_template('login.html', title="Аккаунт")
 
 
 if __name__ == '__main__':
