@@ -16,11 +16,26 @@
 <header>
     <div class="header small">
         <h1 class="header_logo">Яндекс Дневник</h1>
-        <a href="/login">Войти</a>
+        {% if logged %}
+            <a href="/account">Личный кабинет</a>
+            <br>
+            {% if acctype == 1 %}
+                <a href="/schedule">Расписание</a>
+                <a href="/marks">Мои оценки</a>
+            {% elif acctype == 2 %}
+                <a href="/schedule">Расписание</a>
+                <a href="/class">Ученики</a>
+            {% elif acctype == 3 %}
+                <a href="/accounts">Аккаунты</a>
+            {% endif %}
+        {% else %}
+            <a href="/login">Войти</a>
+        {% endif %}
     </div>
 </header>
 <div class="offset">
-    {% block content %}{% endblock %}
+    {% block content %}
+    {% endblock %}
 </div>
 </body>
 </html>

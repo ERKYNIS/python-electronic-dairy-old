@@ -17,7 +17,7 @@ body {
   transition: 0.3s;
 }
 .header.small {
-  height: 70px;
+  height: 105px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
 .header.small ~ .offset {
