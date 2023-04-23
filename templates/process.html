@@ -1,0 +1,13 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+{% if redirect %}
+<meta http-equiv="refresh" content="4; url={{ redirect }}" />
+{% endif %}
+<div style="position: absolute; width:50%;text-align: center;top:50%;left:50%;transform: translate(-50%,-50%)">
+    <img style="width:200px" src="https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/loading.gif?v=1682018883600"/>
+ <h3><strong>Пожалуйста подождите...</strong></h3>
+   <h5 style="margin-bottom:5%">Выполняем некоторые нужные операции.</h5>
+   <p>Сейчас вы будете перенаправлены...</p>
+</div>
+{% endblock %}

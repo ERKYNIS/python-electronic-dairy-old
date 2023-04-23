@@ -1,0 +1,132 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<h1>{{ lesson[1] }}</h1>
+<br>
+<h4>{{ lesson[2] }}</h4>
+<br>
+<div style="width:90%;margin: 0 auto">
+	<div style="width: 70%;margin: 0 auto;margin-bottom: 15px;">
+	<form action="/lesson/{{ lesson[0] }}" method="POST">
+	<table class="table table-striped table-hover table-bordered">
+		<tbody>
+			<tr>
+				<td style="width:40px"><strong>Тема</strong></td>
+				<td><input name="topic" type="text" value="{{ lesson[4] }}" required style="width:100%"></td>
+			</tr>
+			<tr>
+				<td style="width:40px"><strong>Домашнее задание</strong></td>
+				<td><input name="homework" type="text" value="{{ lesson[5] }}" required style="width:100%"></td>
+			</tr>
+		</tbody>
+	</table>
+		<div class="d-flex justify-content-end">
+	<button class="btn btn-primary">Обновить</button>
+		</div>
+		<input name="action" type="hidden" value="editInfo">
+	</form>
+		</div>
+
+
+<table class="table table-striped table-hover table-bordered">
+	<thead><tr>
+		<th style="width: 5%;">№</th>
+		<th style="width: 25%;">Ученик</th>
+		<th style="width: 30%;">Оценки</th>
+	</tr></thead>
+    <tbody>
+	{% for people in peoples %}
+		<tr>
+			<td>{{ loop.index }}</td>
+       	 	<td>{{ people[4] }} {{ people[5] }}</td>
+			<td>
+				{% for mark in people[10] %}
+				<a style="padding: 1px 5px;display:inline" href="/lesson/{{ lesson[0] }}?action=editMark&peopleid={{ people[0] }}&markid={{ mark[0] }}" class="btn btn-{% if mark[1] == 5 %}success{% elif mark[1] == 4 %}primary{% elif mark[1] == 3 %}warning{% elif mark[1] < 3 %}danger{% endif %}">{{ mark[1] }}</a>
+				{% endfor %}
+				<a class="btn btn-success" style="padding: 1px 5px;display:inline" href="/lesson/{{ lesson[0] }}?action=addMark&peopleid={{ people[0] }}" title="Добавить оценку"><i class="fa-solid fa-plus"></i></a>
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+</div>
+
+<div class="modal fade" id="addMark" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавление оценки</h5>
+      </div>
+		<form action="/lesson/{{ lesson[0] }}" method="POST">
+      <div class="modal-body">
+
+
+		  <input type="hidden" name="peopleid" value="{{ editpeople[0] }}">
+		  <input type="hidden" name="people" value="{{ editpeople[4] }} {{ editpeople[5] }}">
+
+		  <label for="mark">Выберите оценку для ученика {{ editpeople[4] }} {{ editpeople[5] }}: </label>
+
+		  <select name="mark" id="mark" required>
+			  <option value="1">1</option>
+			  <option value="2">2</option>
+			  <option value="3">3</option>
+			  <option value="4">4</option>
+			  <option value="5">5</option>
+		  </select>
+
+		  <input type="hidden" name="action" value="addMark">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Добавить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editMark" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Редактирование оценки</h5>
+      </div>
+		<form action="/lesson/{{ lesson[0] }}" method="POST">
+      <div class="modal-body">
+
+
+		  <input type="hidden" name="markid" value="{{ editpeople[10][0] }}">
+		  <input type="hidden" name="peopleid" value="{{ editpeople[0] }}">
+		  <input type="hidden" name="people" value="{{ editpeople[4] }} {{ editpeople[5] }}">
+
+		  <label for="newmark">Выберите новую оценку для ученика {{ editpeople[4] }} {{ editpeople[5] }}: </label>
+
+		  <select name="newmark" id="newmark" required autocomplete="off">
+			  <option value="0">Убрать</option>
+			  <option {% if editpeople[8][1] == 1 %} selected {% endif %} value="1">1</option>
+			  <option {% if editpeople[8][1] == 2 %} selected {% endif %} value="2">2</option>
+			  <option {% if editpeople[8][1] == 3 %} selected {% endif %} value="3">3</option>
+			  <option {% if editpeople[8][1] == 4 %} selected {% endif %} value="4">4</option>
+			  <option {% if editpeople[8][1] == 5 %} selected {% endif %} value="5">5</option>
+		  </select>
+
+		  <input type="hidden" name="action" value="editMark">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Изменить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		var url = window.location.href;
+		var arr = url.split('?');
+		if (arr.length > 1 && arr[1] !== '') {
+			console.log("#" + arr[1].split('&')[0].split('=')[1]);
+			window.$("#" + arr[1].split('&')[0].split('=')[1]).modal('show');
+		}
+	});
+</script>
+{% endblock %}

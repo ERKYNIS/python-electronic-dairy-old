@@ -1,0 +1,10 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<div style="position: absolute; text-align: center;top:50%;left:50%;transform: translate(-50%,-50%)">
+    <img style="width:400px;" src="https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/error.gif"/>
+ <h3><strong>Ошибка</strong></h3>
+   <h5 style="margin-bottom:5%">{{ error }}</h5>
+   <a class="btn btn-dark" href="/">Главная</a>
+</div>
+{% endblock %}

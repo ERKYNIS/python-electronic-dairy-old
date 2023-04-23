@@ -1,0 +1,131 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<h1><strong>Классы</strong></h1>
+<br>
+<div style="width:90%;margin: 0 auto">
+    <div class="d-flex justify-content-end" style="margin-bottom: 15px;">
+<a class="btn btn-success" href="/classes?action=createClass" title="Создать класс"><i class="fa-solid fa-plus"></i></a>
+        </div>
+{% if classes|length > 0 %}
+<table class="table table-striped table-hover table-bordered">
+	<thead><tr>
+		<th style="width: 3%;">ID</th>
+      <th style="width: 20%;">Класс</th>
+		<th style="width: 20%;">Классный руководитель</th>
+		<th style="width: 15%;">Действия</th>
+	</tr></thead>
+    <tbody>
+	{% for class in classes %}
+      <tr>
+		  <td>{{ class[0] }}</td>
+		<td>{{ class[1] }} {{ class[2] }}</td>
+		  <td>
+              {% if class[3] != 0 %}
+              <img class="user-pic__image" style="width:35px; margin-right: 10px;" src="https://avatars.mds.yandex.net/get-yapic/{{ class[3][6] }}/islands-middle"> {{ class[3][4] }} {{ class[3][5] }}
+              {% else %}
+              Не указан
+              {% endif %}
+          </td>
+		  <td><a class="btn btn-warning" href="/classes?action=editTeacher&id={{ class[0] }}" title="Изменить классного руководителя"><i class="fa-solid fa-user-pen"></i></a> <a class="btn btn-danger" href="/classes?action=deleteClass&id={{ class[0] }}" title="Удалить класс"><i class="fa-solid fa-xmark"></i></a></td>
+      </tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% else %}
+    <h4>Список классов пуст.</h4>
+{% endif %}
+</div>
+
+<div class="modal fade" id="editTeacher" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Изменение классного руководителя {{ editclass[1] }} {{ editclass[2] }} (№{{ editclass[0] }})</h5>
+      </div>
+		<form action="/classes" method="POST">
+      <div class="modal-body">
+        <p><strong>Текущий классный руководитель:</strong> {{ editclass[3][4] }} {{ editclass[3][5] }}</p>
+		  <br>
+			  <select name="newteacher" required>
+				  <option {% if editclass[3][0] == 0 %} selected {% endif%} value="0">Не указан</option>
+				  {% for teacher in teachers %}
+                  <option {% if editclass[3][0] == teacher[0] %} selected {% endif%} value="{{ teacher[0] }}">{{ teacher[4] }} {{ teacher[5] }}</option>
+                  {% endfor %}
+			  </select>
+		  <input type="hidden" name="action" value="editTeacher">
+		  <input type="hidden" name="classid" value="{{ editclass[0] }}">
+           <input type="hidden" name="thisteacher" value="{{ editclass[3][0] }}">
+		  <input type="hidden" name="class" value="{{ editclass[0] }} | {{ editclass[1] }} | {{ editclass[2] }}">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Изменить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="createClass" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Создание класса</h5>
+      </div>
+		<form action="/classes" method="POST">
+      <div class="modal-body">
+          <label for="classcreatenumber">Номер класса</label>
+		  <input name="num" type="number" min="1" max="11" id="classcreatenumber" required><br><br>
+          <label for="classcreatelitter">Литера</label>
+          <input name="litter" type="text" minlength="1" maxlength="1" id="classcreatelitter" required><br><br>
+          <label for="classcreateteacher">Классный руководитель</label>
+		    <select name="teacher" id="classcreateteacher" required>
+				  <option selected value="0">Не указан</option>
+				  {% for teacher in teachers %}
+                    {% if teacher[7] == 0 %}
+                    <option value="{{ teacher[0] }}">{{ teacher[4] }} {{ teacher[5] }}</option>
+                {% endif %}}
+                  {% endfor %}
+			  </select>
+		  <input type="hidden" name="action" value="createClass">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Создать</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteClass" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Удаление класса {{ editclass[1] }} {{ editclass[2] }} (№{{ editclass[0] }})</h5>
+      </div>
+		<form action="/classes" method="POST">
+      <div class="modal-body">
+		  <p>Вы действительно хотите удалить класс?<br><strong>Это действие нельзя будет отменить!</strong></p>
+		  <input type="hidden" name="action" value="delete">
+		  <input type="hidden" name="classid" value="{{ editclass[0] }}">
+		  <input type="hidden" name="class" value="{{ editclass[0] }} | {{ editclass[1] }} | {{ editclass[2] }}">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">Удалить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		var url = window.location.href;
+		var arr = url.split('?');
+		if (arr.length > 1 && arr[1] !== '') {
+			console.log("#" + arr[1].split('&')[0].split('=')[1]);
+			window.$("#" + arr[1].split('&')[0].split('=')[1]).modal('show');
+		}
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+@font-face {
+    font-family: 'YandexDisplayLight';
+    src: url('https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/font.ttf?v=1682006980590');
+}
+.offset {
+  margin-top: 0;
+  padding-top: 0px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+body {
+    font-family: YandexDisplayLight;
+    background-image:url(https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/bj.webp?v=1682006591067);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #292b2c;
+    background-color: #fff;
+}
+
+
+a:active,
+a:hover,
+a {
+  text-decoration: none;
+  color: #000;
+}
+
+:root {
+  --primary: #0676ed;
+  --background: #222b45;
+  --warning: #f2a600;
+  --success: #12c99b;
+  --error: #e41749;
+  --dark: #151a30;
+}

@@ -1,0 +1,107 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<h1>
+	{% if isteacher %}
+	Журнал
+	{% else %}
+	Дневник
+	{% endif %}
+</h1>
+<br>
+<h4>Учебная неделя с <strong>{{ startdate }}</strong> по <strong>{{ enddate }}</strong></h4>
+<br>
+<div style="margin-bottom: 15px">
+	<a style="display:inline" class="btn btn-secondary" href="/diary?date={{ previousweek }}">⬅ Прошлая неделя</a> <a class="btn btn-dark" style="display:inline" href="/diary">Текущая неделя</a> <a class="btn btn-secondary" style="display:inline" href="/diary?date={{ nextweek }}">Следующая неделя ➡</a>
+</div>
+<div style="width:90%;margin: 0 auto">
+	{% for date in dates %}
+<h5 style="text-align:left;margin-top: 50px"><strong>{{ week[loop.index-1] }}</strong> {{ date }}
+	{% if isteacher %}
+	<a class="btn btn-success" style="padding: 1px 5px;display:inline" href="/diary?action=addLesson&createdate={{ date }}" title="Добавить урок"><i class="fa-solid fa-plus"></i></a>
+	{% endif %}
+</h5>
+<table class="table table-striped table-hover table-bordered">
+	<thead><tr>
+		<th style="width: 15%;">Предмет</th>
+		<th style="width: 20%;">Тема урока</th>
+		<th style="width: 30%;">Домашнее задание</th>
+		{% if not isteacher %}
+		<th style="width: 10%;">Оценки</th>
+		{% endif %}
+	</tr></thead>
+    <tbody>
+		  {% for lesson in lessons[loop.index0] %}
+		  <tr>
+		  <td>
+		  {% if isteacher %}
+			  <a class="btn btn-danger" style="padding: 1px 5px;display:inline" href="/diary?action=removeLesson&id={{ lesson[0] }}" title="Удалить урок"><i class="fa-solid fa-xmark"></i></a>
+			  <a href="/lesson/{{ lesson[0] }}">{{ lesson[1] }}</a>
+
+			  {% else %}
+			  {{ lesson[1] }}
+		  {% endif %}
+		  </td>
+
+		<td>{{ lesson[4] }}</td>
+        <td><p>{{ lesson[5] }}</p></td>
+		  {% if not isteacher %}
+		<td>
+			{% for mark in lesson[6] %}
+				<a style="padding: 1px 5px;display:inline" class="btn btn-{% if mark[1] == 5 %}success{% elif mark[1] == 4 %}primary{% elif mark[1] == 3 %}warning{% elif mark[1] < 3 %}danger{% endif %}">{{ mark[1] }}</a>
+			{% endfor %}
+		</td>
+		  <tr>
+		  {% endif %}
+		  {% endfor %}
+	</tbody>
+</table>
+	{% endfor %}
+</div>
+
+{% if isteacher %}
+
+<div class="modal fade" id="addLesson" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Создание урока</h5>
+      </div>
+		<form action="/diary" method="POST">
+      <div class="modal-body">
+
+		  <label for="date">Дата и время</label>
+		  <input style="display: inline" type="text" name="date" id="date" value="{{ createdate }}" readonly>
+		  <input style="display: inline" type="time" name="time" required><br><br>
+
+          <label for="subject">Предмет</label>
+		  <input type="text" name="subject" id="subject" required><br><br>
+
+          <label for="topic">Тема урока</label>
+          <input type="text" name="topic" id="topic" required value="Повторение"><br><br>
+
+          <label for="homework">Домашнее задание</label>
+		  <input type="text" name="homework" id="homework" required value="Не задано."><br><br>
+
+		  <input type="hidden" name="action" value="addLesson">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Создать</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		var url = window.location.href;
+		var arr = url.split('?');
+		if (arr.length > 1 && arr[1] !== '') {
+			console.log("#" + arr[1].split('&')[0].split('=')[1]);
+			window.$("#" + arr[1].split('&')[0].split('=')[1]).modal('show');
+		}
+	});
+</script>
+{% endif %}
+{% endblock %}

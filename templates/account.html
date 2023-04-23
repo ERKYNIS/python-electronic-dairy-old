@@ -1,0 +1,90 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<h1><strong>Личный кабинет</strong></h1>
+<br><br><br>
+<h6>
+{% if accinfo[3] == 1 %}
+  Привет,
+{% else %}
+  Здравствуйте,
+{% endif %}</h6>
+<h4>{{ accinfo[4] }} {{ accinfo[5] }}</h4>
+<img style="width:20%;background-color: transparent;border-radius: 100px;object-fit: cover; -o-object-fit: cover;max-width:300px" src="https://avatars.mds.yandex.net/get-yapic/{{ accinfo[6] }}/islands-200">
+
+<br>
+<h6>
+  {{ acctypes[accinfo[3]] }}
+{% if (accinfo[3] == 1 or accinfo[3] == 2) and classinfo|length > 0 %}
+  {{ classinfo[0][1] }}{{ classinfo[0][2] }} класса
+  {% endif %}
+</h6>
+<br>
+<div>
+  <i style="vertical-align: middle;display: inline;font-size:25px" class="fa-brands fa-telegram"></i>
+{% if accinfo[8] %}
+  <a style="vertical-align: middle;" href="https://t.me/{{ accinfo[9] }}" target="_blank">@{{ accinfo[9] }}</a> <a style="margin-left:5px;color:red" title="Отвязать аккаунт Telegram" href="/account?action=unlinkTelegram"><i class="fa-solid fa-xmark"></i></a>
+{% else %}
+<a style="vertical-align: middle;padding: 1px 1px" class="btn btn-primary" href="/account?action=linkTelegram">Привязать</a>
+{% endif %}
+  </div>
+<br>
+{% if accinfo[3] == 1 %}
+<a class="btn btn-light" href="/diary">Дневник <i class="fa-solid fa-book"></i></a>
+{% elif accinfo[3] == 2 %}
+<a class="btn btn-light" href="/diary">Журнал <i class="fa-solid fa-book"></i></a>
+<a class="btn btn-light" href="/class">Мой класс <i class="fa-solid fa-user-group"></i></a>
+{% elif accinfo[3] == 3 %}
+<a class="btn btn-light" href="/accounts">Аккаунты <i class="fa-solid fa-user-group"></i></a>
+<a class="btn btn-light" href="/classes">Классы <i class="fa-solid fa-user-graduate"></i></a>
+{% else %}
+<h3>У вас нет доступа к функционалу сайта!</h3>
+<p>Администрация электронного дневника должна назначить вам роль.<br>Пожалуйста, ожидайте...</p>
+{% endif %}
+<br><br>
+<a class="btn btn-danger" href="/quit">Выйти <i class="fa-solid fa-xmark"></i></a>
+
+
+<div class="modal fade" id="linkTelegram" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Привязка аккаунта Telegram</h5>
+      </div>
+      <div class="modal-body">
+		  <h6>Отправьте <a style="font-weight: 600" href="https://t.me/yandex_diary_bot">нашему боту</a> "/link {{ accinfo[6] }}", чтобы привязать свой аккаунт Telegram к электронному дневнику.</h6>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="unlinkTelegram" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Отвязка аккаунта Telegram</h5>
+      </div>
+		<form action="/account" method="POST">
+      <div class="modal-body">
+		  <p>Вы действительно хотите отвязать аккаунт Telegram?<br><strong>Если вы передумаете, его придётся привязывать заного!</strong></p>
+		  <input type="hidden" name="action" value="unlinkTelegram">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">Отвязать</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<script>
+	$(document).ready(function() {
+		var url = window.location.href;
+		var arr = url.split('?');
+		if (arr.length > 1 && arr[1] !== '') {
+			console.log("#" + arr[1].split('&')[0].split('=')[1]);
+			window.$("#" + arr[1].split('&')[0].split('=')[1]).modal('show');
+		}
+	});
+</script>
+{% endblock %}

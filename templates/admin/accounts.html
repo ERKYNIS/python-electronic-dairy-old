@@ -1,0 +1,157 @@
+{% extends "pagetemplate.html" %}
+
+{% block content %}
+<h1><strong>
+	{% if editacc is defined %}
+	Аккаунты
+	{% else %}
+	Мой класс
+	{% endif %}
+</strong></h1>
+<br>
+<div style="width:90%;margin: 0 auto">
+<table class="table table-striped table-hover table-bordered">
+	<thead><tr>
+		<th style="width: 3%;">ID</th>
+		<th style="width: 20%;">Логин<br>Yandex ID</th>
+		<th style="width: 20%;">ФИО</th>
+		<th style="width: 10%;">Telegram</th>
+		{% if editacc is defined %}
+		<th style="width: 15%;">Роль</th>
+		<th style="width: 10%;">Класс</th>
+		<th style="width: 15%;">Действия</th>
+		{% endif %}
+	</tr></thead>
+    <tbody>
+	{% for acc in accounts %}
+      <tr>
+		  <td>{{ acc[0] }}</td>
+		<td>{{ acc[1] }}<br>{{ acc[2] }}</td>
+		  <td><img class="user-pic__image" style="width:35px; margin-right: 10px;" src="https://avatars.mds.yandex.net/get-yapic/{{ acc[6] }}/islands-middle"> {{ acc[4] }} {{ acc[5] }}</td>
+		  <td>
+{% if acc[8] %}
+<a href="https://t.me/{{ acc[9] }}" target="_blank">@{{ acc[9] }}</a>
+{% else %}
+<a class="btn btn-danger" style="padding: 5px 5px">Не привязан</a>
+{% endif %}
+  </td>
+		  {% if editacc is defined %}
+		  <td>{{ acctypes[acc[3]] }}</td>
+		  <td>
+		  {% if acc[7] == 0 %}
+		  Не указан
+		  {% else %}
+		  {{ classes[acc[7]-1][1] }} {{ classes[acc[7]-1][2] }}
+		  {% endif %}
+		  </td>
+		  <td><a class="btn btn-warning" href="/accounts?id={{ acc[0] }}&action=editAccType" title="Изменить тип аккаунта"><i class="fa-solid fa-user-pen"></i></a>
+			  {% if acc[3] != 3 and acc[3] != 0 %}<a class="btn btn-primary" href="/accounts?id={{ acc[0] }}&action=editAccClass" title="Изменить класс"><i class="fa-solid fa-user-graduate"></i></a> {% endif %}
+			 {% if acc[3] != 3 %} <a class="btn btn-danger" href="/accounts?id={{ acc[0] }}&action=deleteAcc" title="Удалить аккаунт"><i class="fa-solid fa-xmark"></i></a> {% endif %}
+		  </td>
+		  {% endif %}
+	  </tr>
+	{% endfor %}
+	</tbody>
+</table>
+</div>
+
+{% if editacc is defined %}
+{% if editacc|length > 3 %}
+<div class="modal fade" id="editAccType" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Изменение типа аккаунта {{ editacc[4] }} {{ editacc[5] }} <br>(№{{ editacc[0] }} | {{ editacc[1] }})</h5>
+      </div>
+		<form action="/accounts" method="POST">
+      <div class="modal-body">
+        <p><strong>Текущий тип аккаунта:</strong> {{ acctypes[editacc[3]] }}</p>
+		  <br>
+			  <select name="newtype" required>
+				  <option {% if editacc[3] == 0 %} selected {% endif%} value="0">Пользователь</option>
+				  <option {% if editacc[3] == 1 %} selected {% endif%} value="1">Ученик</option>
+				  <option {% if editacc[3] == 2 %} selected {% endif%} value="2">Учитель</option>
+				  <option {% if editacc[3] == 3 %} selected {% endif%} value="3">Администратор</option>
+			  </select>
+		  <input type="hidden" name="action" value="editType">
+			  <input type="hidden" name="accid" value="{{ editacc[0] }}">
+		  <input type="hidden" name="account" value="{{ editacc[4] }} | {{ editacc[5] }} | {{ editacc[0] }} | {{ editacc[1] }} | {{ editacc[3] }}">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Изменить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="editAccClass" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Изменение класса аккаунта {{ editacc[4] }} {{ editacc[5] }} <br>(№{{ editacc[0] }} | {{ editacc[1] }})</h5>
+      </div>
+		<form action="/accounts" method="POST">
+      <div class="modal-body">
+        <p><strong>Тип аккаунта:</strong> {{ acctypes[editacc[3]] }}<br><strong>Класс:</strong>
+			{% if editacc[7] == 0 %}
+			Не указан
+			{% else %}
+			{{ classes[editacc[7]-1][1] }} {{ classes[editacc[7]-1][2] }}
+			{% endif %}
+		</p>
+		  <br>
+			  <select name="newclass" required>
+				  <option {% if editacc[7] == 0 %} selected {% endif%} value="0">Не указан</option>
+				  {% for class in classes %}
+				  <option {% if editacc[7] == class[0] %} selected {% endif%} value="{{ class[0] }}">{{ class[1] }} {{ class[2] }}</option>
+				  {% endfor %}
+			  </select>
+		  <input type="hidden" name="action" value="editClass">
+			  <input type="hidden" name="accid" value="{{ editacc[0] }}">
+		  <input type="hidden" name="account" value="{{ editacc[4] }} | {{ editacc[5] }} | {{ editacc[0] }} | {{ editacc[1] }} | {{ editacc[3] }}">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Изменить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteAcc" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Удаление аккаунта {{ editacc[4] }} {{ editacc[5] }} <br>(№{{ editacc[0] }} | {{ editacc[1] }})</h5>
+      </div>
+		<form action="/accounts" method="POST">
+      <div class="modal-body">
+		  <p>Вы действительно хотите удалить аккаунт?<br><strong>Это действие нельзя будет отменить!</strong></p>
+		  <input type="hidden" name="action" value="delete">
+		  <input type="hidden" name="accid" value="{{ editacc[0] }}">
+		  <input type="hidden" name="account" value="{{ editacc[4] }} | {{ editacc[5] }} | {{ editacc[0] }} | {{ editacc[1] }} | {{ editacc[3] }}">
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger">Удалить</button>
+      </div>
+		</form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+	$(document).ready(function() {
+		var url = window.location.href;
+		var arr = url.split('?');
+		if (arr.length > 1 && arr[1] !== '') {
+			console.log("#" + arr[1].split('&')[1].split('=')[1]);
+			window.$("#" + arr[1].split('&')[1].split('=')[1]).modal('show');
+		}
+	});
+</script>
+
+{% endif %}
+{% endblock %}
