@@ -141,7 +141,7 @@ async def stopmessage(update, context):
 
 
 def startbot():
-    application = Application.builder().token("5984606296:AAHoxjTiQWTcnb00Z5Ho4Sc7mzl9uiypbYw").build()
+    application = Application.builder().token("TOKEN").build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('message', newmessage)],
