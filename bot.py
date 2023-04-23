@@ -29,6 +29,13 @@ async def start(update, context):
         "Авторизируйтесь, используя команду \"/link\"")
 
 
+async def help(update, context):
+    await update.message.reply_text(
+        "<strong>Помощь по командам</strong>:\n"
+        "Привязать аккаунт -> /link\nОтвязать аккаунт -> /quit\nПрофиль -> /profile\n"
+        "Отправить сообщение -> /message", parse_mode='html')
+
+
 async def link(update, context):
     await checkauth(update, context)
     if "account" in context.user_data:
@@ -153,6 +160,7 @@ def startbot():
     application.add_handler(CommandHandler('link', link))
     application.add_handler(CommandHandler('quit', quit))
     application.add_handler(CommandHandler('profile', profile))
+    application.add_handler(CommandHandler('help', help))
     application.run_polling()
 
 startbot()
