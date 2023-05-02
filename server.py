@@ -4,8 +4,7 @@ import os
 import telegramapi
 from urllib.parse import urlencode
 
-import flask
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template as rend_templ, request, redirect, flash
 from requests import post
 
 app = Flask(__name__)
@@ -35,7 +34,7 @@ def render_template(template, title="", loginneed=False, typeneed=[0], **kwargs)
     if request.cookies.get("id"):
         logged = True
         acctype = int(request.cookies.get("acctype"))
-    return flask.render_template(template, title=title, logged=logged, acctype=acctype,
+    return rend_templ(template, title=title, logged=logged, acctype=acctype,
                                  account=request.cookies.get("account"), avatar=request.cookies.get("avatarid"),
                                  **kwargs)
 
