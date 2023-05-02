@@ -1,10 +1,9 @@
 import sqlite3
 
-import flask
 import requests
-from flask import redirect, jsonify, request
+from flask import redirect, jsonify, request, Blueprint
 
-blueprint = flask.Blueprint(
+blueprint = Blueprint(
     'telegram_api',
     __name__,
     template_folder='templates'
