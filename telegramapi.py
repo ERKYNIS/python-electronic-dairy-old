@@ -66,6 +66,9 @@ def telegramapi(method):
                     return jsonify({'error': 'К данному аккаунту уже привязан другой аккаунт Telegram!'})
             else:
                 return jsonify({'error': 'Неверный секретный ключ!'})
+        elif method == "quit":
+            databaserequest("UPDATE accounts SET tg_chat_id = ?, tg_username = ? WHERE id = ?", params=[None, None, request.args.get("id")], commit=True)
+            return jsonify({'OK': 'OK'})
         elif method == "getuser":
             testaccount = databaserequest("SELECT * FROM accounts WHERE tg_chat_id = ?",
                                           params=[request.args.get("chat_id")])
