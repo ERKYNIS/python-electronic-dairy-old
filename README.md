@@ -31,10 +31,10 @@
 - Telegram Bot</br>
 
 **Настройка под себя:**
-- Авторизация через Яндекс.ID:
-    -- Поменяйте слова "КЛИЕНТID" и "КЛИЕНТСЕКРЕТ" на свои client_id и client_secret API Яндекс.ID.
-- Telegram Bot:
-    -- Поменяйте слово "APIКЛЮЧ" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
+- Авторизация через Яндекс.ID:</br>
+    Поменяйте слова "КЛИЕНТID" и "КЛИЕНТСЕКРЕТ" на свои client_id и client_secret API Яндекс.ID.
+- Telegram Bot:</br>
+    Поменяйте слово "APIКЛЮЧ" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
 
 **Материалы и команда разработки:**</br>
 - Проект – Глазунов Никита</br>
