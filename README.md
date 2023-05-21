@@ -37,7 +37,8 @@
     Поменяйте слово "APIКЛЮЧ" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
 
 **Видео:**</br>
-[![Видео](https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/logo.jpeg?v=1684668298741)](https://www.youtube.com/watch?v=Pv_fo_H9drw)
+[![Видео](https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/logo.jpeg?v=1684668298741)](https://www.youtube.com/watch?v=Pv_fo_H9drw)</br>
+[**Презентация**](https://github.com/ERKYNIS/python-electronic-dairy/raw/main/%D0%9F%D1%80%D0%B5%D0%B7%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F.pptx)
 
 **Материалы и команда разработки:**</br>
 - Проект – Глазунов Никита</br>
