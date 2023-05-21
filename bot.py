@@ -75,6 +75,7 @@ async def quit(update, context):
     if "account" not in context.user_data:
         await update.message.reply_text("Вы не авторизированы! Используйте команду \"/link\".")
     else:
+        requests.get(f"http://yandex-diary-python.glitch.me/api/quit?id={context.user_data['account'][0]}").json()
         context.user_data.pop('account')
         await update.message.reply_text("Вы вышли из аккаунта!")
 
