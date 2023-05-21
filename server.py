@@ -52,8 +52,8 @@ def login():
         token = post("https://oauth.yandex.ru/token", urlencode({
             'grant_type': 'authorization_code',
             'code': request.args.get('code'),
-            'client_id': "5e6a0be5bbfe4606be5c35a28e6fe741",
-            'client_secret': "003775f9aa174049badefcaf785f9dde"
+            'client_id': "КЛИЕНТID",
+            'client_secret': "КЛИЕНТСЕКРЕТ"
         })).json().get("access_token")
         if token:
             accinfo = post(f"https://login.yandex.ru/info?oauth_token={token}")
