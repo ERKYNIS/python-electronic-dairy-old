@@ -36,6 +36,9 @@
 - Telegram Bot:</br>
     Поменяйте слово "APIКЛЮЧ" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
 
+**Видео:**</br>
+[![Видео](https://img.youtube.com/vi/Pv_fo_H9drw/0.jpg)](https://www.youtube.com/watch?v=Pv_fo_H9drw)
+
 **Материалы и команда разработки:**</br>
 - Проект – Глазунов Никита</br>
 - Мотивация и поддержка – Ложков Кирилл Германович</br>
