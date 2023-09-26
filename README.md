@@ -34,7 +34,7 @@
 - Авторизация через Яндекс.ID:</br>
     Поменяйте слова "КЛИЕНТID" и "КЛИЕНТСЕКРЕТ" на свои client_id и client_secret API Яндекс.ID.
 - Telegram Bot:</br>
-    Поменяйте слово "APIКЛЮЧ" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
+    Поменяйте фразу "ТОКЕН БОТА TELEGRAM" в файлах bot.py и telegramapi.py на свой API ключ бота Telegram.
 
 **Видео:**</br>
 [![Видео](https://cdn.glitch.global/2bd82fef-921c-4ac4-9240-a3a0380407b9/logo.jpeg?v=1684668298741)](https://www.youtube.com/watch?v=Pv_fo_H9drw)</br>
