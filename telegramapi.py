@@ -9,6 +9,8 @@ blueprint = Blueprint(
     template_folder='templates'
 )
 
+BOTTOKEN = 'ТОКЕН БОТА TELEGRAM'
+
 con = sqlite3.connect("database.db", check_same_thread=False)
 cur = con.cursor()
 
@@ -21,23 +23,25 @@ cur.execute("""CREATE TABLE IF NOT EXISTS lessons (id INTEGER PRIMARY KEY AUTOIN
 class_id INTEGER, topic TEXT, homework TEXT);""")
 cur.execute("""CREATE TABLE IF NOT EXISTS marks (id INTEGER PRIMARY KEY AUTOINCREMENT, lesson_id INTEGER, 
 student_id INTEGER, mark INTEGER);""")
+cur.execute("""CREATE TABLE IF NOT EXISTS attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, lesson_id INTEGER, 
+student_id INTEGER, attendance INTEGER);""")
 
 
 def sendmessage(chat_id, message):
-    return requests.get('https://api.telegram.org/botAPIКЛЮЧ/sendMessage?chat_id=' + str(chat_id) + '&parse_mode=Markdown&text=' + message).json()
+    return requests.get(f'https://api.telegram.org/bot{BOTTOKEN}/sendMessage?chat_id=' + str(chat_id) + '&parse_mode=Markdown&text=' + message).json()
 
 
 def sendusermessage(id, message):
     account = databaserequest("SELECT * FROM accounts WHERE id = ? AND LENGTH(tg_chat_id) >= 1", params=[id])
     if len(account) > 0:
-        return requests.get('https://api.telegram.org/botAPIКЛЮЧ/sendMessage?chat_id=' + str(account[0][8]) + '&parse_mode=Markdown&text=' + message).json()
+        return requests.get(f'https://api.telegram.org/bot{BOTTOKEN}/sendMessage?chat_id=' + str(account[0][8]) + '&parse_mode=Markdown&text=' + message).json()
 
 
 def sendclassmessage(id, message):
     peoples = databaserequest("SELECT * FROM accounts WHERE class = ? AND LENGTH(tg_chat_id) >= 1", params=[id])
     if len(peoples) > 0:
         for people in peoples:
-            return requests.get('https://api.telegram.org/botAPIКЛЮЧ/sendMessage?chat_id=' + str(people[8]) + '&parse_mode=Markdown&text=' + message).json()
+            return requests.get(f'https://api.telegram.org/bot{BOTTOKEN}/sendMessage?chat_id=' + str(people[8]) + '&parse_mode=Markdown&text=' + message).json()
 
 
 def databaserequest(text, params=None, commit=False):

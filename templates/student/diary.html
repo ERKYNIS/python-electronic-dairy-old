@@ -27,7 +27,8 @@
 		<th style="width: 20%;">Тема урока</th>
 		<th style="width: 30%;">Домашнее задание</th>
 		{% if not isteacher %}
-		<th style="width: 10%;">Оценки</th>
+            <th style="width: 10%;">Посещаемость</th>
+		    <th style="width: 10%;">Оценки</th>
 		{% endif %}
 	</tr></thead>
     <tbody>
@@ -44,7 +45,8 @@
 		  </td>
 
 		<td>{{ lesson[4] }}</td>
-        <td><p>{{ lesson[5] }}</p></td>
+          <td><p>{{ lesson[5] }}</p></td>
+        <td><p>{{ lesson[7] }}</p></td>
 		  {% if not isteacher %}
 		<td>
 			{% for mark in lesson[6] %}

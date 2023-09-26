@@ -32,6 +32,7 @@
 	<thead><tr>
 		<th style="width: 5%;">№</th>
 		<th style="width: 25%;">Ученик</th>
+        <th style="width: 10%;">Посещаемость</th>
 		<th style="width: 30%;">Оценки</th>
 	</tr></thead>
     <tbody>
@@ -39,6 +40,12 @@
 		<tr>
 			<td>{{ loop.index }}</td>
        	 	<td>{{ people[4] }} {{ people[5] }}</td>
+            <td><select name="attendance" id="attendance" onchange="editAttendace({{ lesson[0] }}, {{ people[0] }})">
+                <option value="0" {% if people[11] == 0 %} selected {% endif %}>Присутствовал(-а)</option>
+			    <option value="1" {% if people[11] == 1 %} selected {% endif %}>Отсутствовал(-а)</option>
+			    <option value="2" {% if people[11] == 2 %} selected {% endif %}>Отсутствовал(-а) (уваж.)</option>
+                <option value="3" {% if people[11] == 3 %} selected {% endif %}>Болел(-а)</option>
+		  </select></td>
 			<td>
 				{% for mark in people[10] %}
 				<a style="padding: 1px 5px;display:inline" href="/lesson/{{ lesson[0] }}?action=editMark&peopleid={{ people[0] }}&markid={{ mark[0] }}" class="btn btn-{% if mark[1] == 5 %}success{% elif mark[1] == 4 %}primary{% elif mark[1] == 3 %}warning{% elif mark[1] < 3 %}danger{% endif %}">{{ mark[1] }}</a>
@@ -128,5 +135,9 @@
 			window.$("#" + arr[1].split('&')[0].split('=')[1]).modal('show');
 		}
 	});
+
+    function editAttendace(lesson, people) {
+        window.location = '/lesson/' + lesson + '?action=editAttendance&peopleid=' + people + '&attendance=' + $('#attendance').val();
+    }
 </script>
 {% endblock %}

